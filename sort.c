@@ -5,6 +5,9 @@
 
 int extraMemoryAllocated;
 
+void mergeSort(int pData[], int l, int r);
+void merge(int pData[], int l, int m, int r);
+
 void *Alloc(size_t sz)
 {
 	extraMemoryAllocated += sz;
@@ -31,6 +34,81 @@ size_t Size(void* ptr)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
+	int mid = (l + r)/2; //Find the middle point
+
+	if ( l < r) 
+	{
+		mergeSort(pData, l, mid); //The firt half
+		mergeSort(pData, mid + 1, r); // The second half
+		merge(pData, l, mid, r);
+	}
+}
+
+// Function that actually merges L and R, will make mergeSort cleaner looking
+void merge(int pData[], int l, int m, int r) 
+{
+	int i = 0;
+	int j = 0;
+	int k = 0;
+
+	int n1 = m - l + 1;
+	int n2 = r - m;
+
+	//Temp Arrays, Left and Right
+    int *L = Alloc(n1 * sizeof(int));
+    int *R = Alloc(n2 * sizeof(int));
+
+	//Fill arrays L and R with their half of pData
+	for (i = 0; i < n1; i++)
+	{
+		L[i] = pData[l + i];
+	}
+		
+	for (j = 0; j < n2; j++)
+	{
+		R[j] = pData[m + 1+ j];
+	}
+
+	//Reset I and J to use to add them back together
+	i = 0; 
+	j = 0; 
+	k = l; 
+
+	//Go through the L and R arrays and add them
+	while (i < n1 && j < n2)
+	{
+		if (L[i] <= R[j])
+		{
+			pData[k] = L[i];
+			i++;
+		}
+		else
+		{
+			pData[k] = R[j];
+			j++;
+		}
+		k++;
+	}
+
+	//If L still  has items, copy them
+	while (i < n1)
+	{
+		pData[k] = L[i];
+		i++;
+		k++;
+	}
+
+	//If R still hase items, copy them
+	while (j < n2)
+	{
+		pData[k] = R[j];
+		j++;
+		k++;
+	}
+
+	//Using DeAlloc to free the memory
+	DeAlloc(L);
+	DeAlloc(R);
 }
 
 // parses input file to an integer array
@@ -65,24 +143,26 @@ int parseData(char *inputFileName, int **ppData)
 }
 
 // prints first and last 100 items in the data array
+//Updated working printArray from the discord
 void printArray(int pData[], int dataSz)
 {
-	int i, sz = dataSz - 100;
-	printf("\tData:\n\t");
-	for (i=0;i<100;++i)
-	{
-		printf("%d ",pData[i]);
-	}
-	printf("\n\t");
-	
-	for (i=sz;i<dataSz;++i)
-	{
-		printf("%d ",pData[i]);
-	}
-	printf("\n\n");
+    int i, sz = (dataSz > 100 ? dataSz - 100 : 0);
+    int firstHundred = (dataSz < 100 ? dataSz : 100);
+    printf("\tData:\n\t");
+    for (i=0;i<firstHundred;++i)
+    {
+        printf("%d ",pData[i]);
+    }
+    printf("\n\t");
+    
+    for (i=sz;i<dataSz;++i)
+    {
+        printf("%d ",pData[i]);
+    }
+    printf("\n\n");
 }
 
-int main(void)
+int main(void) 
 {
 	clock_t start, end;
 	int i;
